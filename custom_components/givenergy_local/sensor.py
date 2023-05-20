@@ -169,7 +169,7 @@ _BASIC_INVERTER_SENSORS = [
     SensorEntityDescription(
         key="p_eps_backup",
         name="Inverter EPS Backup Power",
-        icon=Icon.EPS,
+        icon=Icon.AC,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=POWER_WATT,
@@ -255,6 +255,24 @@ _CONSUMPTION_TOTAL_SENSOR = SensorEntityDescription(
     device_class=SensorDeviceClass.ENERGY,
     state_class=SensorStateClass.TOTAL_INCREASING,
     native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+)
+
+_GRID_IMPORT_POWER = SensorEntityDescription(
+    key="p_grid_import_power",
+    name="Grid Import Power",
+    icon=Icon.GRID_IMPORT,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
+)
+
+_GRID_EXPORT_POWER = SensorEntityDescription(
+    key="p_grid_export_power",
+    name="Grid Export Power",
+    icon=Icon.GRID_EXPORT,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
 )
 
 _BATTERY_MODE_SENSOR = SensorEntityDescription(
