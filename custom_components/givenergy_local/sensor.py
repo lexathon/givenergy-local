@@ -679,7 +679,7 @@ class SolarToHouse(InverterBasicSensor):
         return S2H
     
 class SolarToBattery(InverterBasicSensor):
-    """Solar to house derivation"""
+    """Solar to battery derivation"""
 
     @property
     def native_value(self) -> StateType:
@@ -695,7 +695,7 @@ class SolarToBattery(InverterBasicSensor):
         return S2B
 
 class SolarToGrid(InverterBasicSensor):
-    """Solar to house derivation"""
+    """Solar to Grid derivation"""
 
     @property
     def native_value(self) -> StateType:
@@ -713,7 +713,7 @@ class SolarToGrid(InverterBasicSensor):
     
     #Battery to House
 class BatteryToHouse(InverterBasicSensor):
-    """Solar to house derivation"""
+    """Battery to house derivation"""
 
     @property
     def native_value(self) -> StateType:
@@ -730,7 +730,7 @@ class BatteryToHouse(InverterBasicSensor):
     
     #Battery to Grid
 class BatteryToGrid(InverterBasicSensor):
-    """Solar to house derivation"""
+    """Battery to Grid derivation"""
 
     @property
     def native_value(self) -> StateType:
@@ -754,7 +754,7 @@ class BatteryToGrid(InverterBasicSensor):
         
     #Grid to Battery
 class GridToBattery(InverterBasicSensor):
-    """Solar to house derivation"""
+    """Grid to Battery derivation"""
 
     @property
     def native_value(self) -> StateType:
@@ -776,7 +776,7 @@ class GridToBattery(InverterBasicSensor):
  
     #Grid to House
 class GridToHouse(InverterBasicSensor):
-    """Solar to house derivation"""
+    """Grid to house derivation"""
 
     @property
     def native_value(self) -> StateType:
