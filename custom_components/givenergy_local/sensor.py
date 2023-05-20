@@ -338,6 +338,12 @@ async def async_setup_entry(
             ConsumptionTotalSensor(
                 coordinator, config_entry, entity_description=_CONSUMPTION_TOTAL_SENSOR
             ),
+            GridImportPower(
+                coordinator, config_entry, entity_description=_GRID_IMPORT_POWER
+            ),
+            GridExportPower(
+                coordinator, config_entry, entity_description=_GRID_EXPORT_POWER
+            ),
             BatteryModeSensor(
                 coordinator, config_entry, entity_description=_BATTERY_MODE_SENSOR
             ),
