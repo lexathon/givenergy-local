@@ -643,7 +643,7 @@ class SolarToBattery(InverterBasicSensor):
         grid_export_power = 0
         if self.data.p_grid_out > 0:
             grid_export_power = abs(self.data.p_grid_out)
-        S2B = min((PV_power-S2H)-grid_export_power,0)
+        S2B = max((PV_power-S2H)-grid_export_power,0)
         return S2B
 
 class SolarToGrid(InverterBasicSensor):
@@ -659,6 +659,6 @@ class SolarToGrid(InverterBasicSensor):
         grid_export_power = 0
         if self.data.p_grid_out > 0:
             grid_export_power = abs(self.data.p_grid_out)
-        S2B = min((PV_power - S2H) - grid_export_power,0)
+        S2B = max((PV_power - S2H) - grid_export_power,0)
         S2G = max(PV_power - S2H - S2B,0)
         return S2G
