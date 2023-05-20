@@ -136,7 +136,7 @@ _BASIC_INVERTER_SENSORS = [
     ),
     SensorEntityDescription(
         key="p_grid_out",
-        name="Grid Export Power",
+        name="Grid Power",
         icon=Icon.GRID_EXPORT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -462,6 +462,28 @@ class ConsumptionTotalSensor(InverterBasicSensor):
 
         return consumption_total
 
+
+class GridImportPower(InverterBasicSensor):
+    """Grid Import Power (absolute value derived from Grid Power if importing)"""
+
+    @property
+    def native_value(self) -> StateType:
+        grid_import_power = 0
+        """Or grid_import_power has a value if we're importing"""
+        if self.data.p_grid_out < 0:
+            grid_import_power = abs(self.data.p_grid_out)
+        return grid_import_power
+    
+class GridExportPower(InverterBasicSensor):
+    """Grid Export Power (absolute value derived from Grid Power if exporting)"""
+
+    @property
+    def native_value(self) -> StateType:
+        grid_export_power = 0
+        """Or grid_export_power has a value if we're exporting"""
+        if self.data.p_grid_out > 0:
+            grid_export_power = abs(self.data.p_grid_out)
+        return grid_export_power
 
 class BatteryModeSensor(InverterBasicSensor):
     """Battery mode sensor."""
