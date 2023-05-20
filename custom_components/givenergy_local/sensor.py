@@ -313,6 +313,33 @@ _BATTERY_CELLS_VOLTAGE_SENSOR = SensorEntityDescription(
     native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
 )
 
+_SOLAR_TO_HOUSE = SensorEntityDescription(
+    key="solar_to_house",
+    name="Solar to House",
+    icon=Icon.PV,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
+)
+
+_SOLAR_TO_BATTERY = SensorEntityDescription(
+    key="solar_to_battery",
+    name="Solar to Battery",
+    icon=Icon.PV,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
+)
+
+_SOLAR_TO_GRID = SensorEntityDescription(
+    key="solar_to_grid",
+    name="Solar to Grid",
+    icon=Icon.PV,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -356,6 +383,15 @@ async def async_setup_entry(
             ),
             BatteryModeSensor(
                 coordinator, config_entry, entity_description=_BATTERY_MODE_SENSOR
+            ),
+            SolarToHouse(
+                coordinator, config_entry, entity_description=_SOLAR_TO_HOUSE
+            ),
+            SolarToBattery(
+                coordinator, config_entry, entity_description=_SOLAR_TO_BATTERY
+            ),
+            SolarToGrid(
+                coordinator, config_entry, entity_description=_SOLAR_TO_GRID
             ),
         ]
     )
@@ -577,3 +613,52 @@ class BatteryCellsVoltageSensor(BatteryBasicSensor):
         return self.data.dict(  # type: ignore[no-any-return]
             include={f"v_battery_cell_{i:02d}" for i in range(1, num_cells + 1)}
         )
+    
+    # POWER FLOW STATS
+    
+    # SOLAR TO HOUSE / BATTERY / GRID
+class SolarToHouse(InverterBasicSensor):
+    """Solar to house derivation"""
+
+    @property
+    def native_value(self) -> StateType:
+        PV_power = self.data.p_pv1 + self.data.p_pv2
+        if PV_power <= 0:
+            return 0
+        """min(PV_power, load_power)"""
+        ##!! with p_load_demand there's a section in givtcp about being <15500 - not really sure what that's for
+        S2H = min((self.data.p_pv1 + self.data.p_pv2),self.data.p_load_demand)
+        return S2H
+    
+class SolarToBattery(InverterBasicSensor):
+    """Solar to house derivation"""
+
+    @property
+    def native_value(self) -> StateType:
+        PV_power = self.data.p_pv1 + self.data.p_pv2
+        if PV_power <= 0:
+            return 0
+        """max((PV_power-S2H)-export_power,0)"""
+        S2H = min((self.data.p_pv1 + self.data.p_pv2),self.data.p_load_demand)
+        grid_export_power = 0
+        if self.data.p_grid_out > 0:
+            grid_export_power = abs(self.data.p_grid_out)
+        S2B = min((PV_power-S2H)-grid_export_power,0)
+        return S2B
+
+class SolarToGrid(InverterBasicSensor):
+    """Solar to house derivation"""
+
+    @property
+    def native_value(self) -> StateType:
+        PV_power = self.data.p_pv1 + self.data.p_pv2
+        if PV_power <= 0:
+            return 0
+        """max(PV_power - S2H - S2B,0)"""
+        S2H = min((self.data.p_pv1 + self.data.p_pv2),self.data.p_load_demand)
+        grid_export_power = 0
+        if self.data.p_grid_out > 0:
+            grid_export_power = abs(self.data.p_grid_out)
+        S2B = min((PV_power - S2H) - grid_export_power,0)
+        S2G = max(PV_power - S2H - S2B,0)
+        return S2G
