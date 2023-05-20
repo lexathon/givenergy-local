@@ -143,14 +143,6 @@ _BASIC_INVERTER_SENSORS = [
         native_unit_of_measurement=POWER_WATT,
     ),
     SensorEntityDescription(
-        key="p_eps_backup",
-        name="EPS Power",
-        icon=Icon.GRID_EXPORT,
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=POWER_WATT,
-    ),
-    SensorEntityDescription(
         key="v_battery",
         name="Battery Voltage",
         icon=Icon.BATTERY,
