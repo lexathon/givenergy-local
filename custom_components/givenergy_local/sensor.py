@@ -340,6 +340,42 @@ _SOLAR_TO_GRID = SensorEntityDescription(
     native_unit_of_measurement=POWER_WATT,
 )
 
+_BATTERY_TO_HOUSE = SensorEntityDescription(
+    key="battery_to_house",
+    name="Battery to House",
+    icon=Icon.BATTERY,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
+)
+
+_BATTERY_TO_GRID = SensorEntityDescription(
+    key="battery_to_grid",
+    name="Battery to Grid",
+    icon=Icon.BATTERY,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
+)
+
+_GRID_TO_BATTERY = SensorEntityDescription(
+    key="grid_to_battery",
+    name="Grid to Battery",
+    icon=Icon.GRID_IMPORT,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
+)
+
+_GRID_TO_HOUSE = SensorEntityDescription(
+    key="grid_to_house",
+    name="Grid to House",
+    icon=Icon.GRID_IMPORT,
+    device_class=SensorDeviceClass.POWER,
+    state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=POWER_WATT,
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -392,6 +428,18 @@ async def async_setup_entry(
             ),
             SolarToGrid(
                 coordinator, config_entry, entity_description=_SOLAR_TO_GRID
+            ),
+            BatteryToHouse(
+                coordinator, config_entry, entity_description=_BATTERY_TO_HOUSE
+            ),
+            BatteryToGrid(
+                coordinator, config_entry, entity_description=_BATTERY_TO_GRID
+            ),
+            GridToHouse(
+                coordinator, config_entry, entity_description=_GRID_TO_HOUSE
+            ),
+            GridToBattery(
+                coordinator, config_entry, entity_description=_GRID_TO_BATTERY
             ),
         ]
     )
@@ -662,3 +710,86 @@ class SolarToGrid(InverterBasicSensor):
         S2B = max((PV_power - S2H) - grid_export_power,0)
         S2G = max(PV_power - S2H - S2B,0)
         return S2G
+    
+    #Battery to House
+class BatteryToHouse(InverterBasicSensor):
+    """Solar to house derivation"""
+
+    @property
+    def native_value(self) -> StateType:
+        """max(discharge_power-export_power,0)"""
+        discharge_power = 0
+        battery_power = self.data.p_battery
+        if battery_power >= 0:
+            discharge_power = abs(battery_power)
+        grid_export_power = 0
+        if self.data.p_grid_out > 0:
+            grid_export_power = abs(self.data.p_grid_out)
+        B2H = max(discharge_power - grid_export_power, 0)
+        return B2H
+    
+    #Battery to Grid
+class BatteryToGrid(InverterBasicSensor):
+    """Solar to house derivation"""
+
+    @property
+    def native_value(self) -> StateType:
+        """max(discharge_power-B2H,0) unless grid export power = 0"""
+        B2G = 0
+        grid_export_power = 0
+        if self.data.p_grid_out > 0:
+            grid_export_power = abs(self.data.p_grid_out)
+        if grid_export_power = 0:
+            return B2G
+        discharge_power = 0
+        battery_power = self.data.p_battery
+        if battery_power >= 0:
+            discharge_power = abs(battery_power)
+        grid_export_power = 0
+        if self.data.p_grid_out > 0:
+            grid_export_power = abs(self.data.p_grid_out)
+        B2H = max(discharge_power - grid_export_power, 0)
+        B2G = max(discharge_power - B2H, 0)
+        return B2G
+        
+    #Grid to Battery
+class GridToBattery(InverterBasicSensor):
+    """Solar to house derivation"""
+
+    @property
+    def native_value(self) -> StateType:
+        """charge_power-max(PV_power-Load_power,0) unless grid import power > 0"""
+        G2B = 0
+        grid_import_power = 0
+        if self.data.p_grid_out < 0:
+            grid_import_power = abs(self.data.p_grid_out)
+        if grid_import_power > 0:
+            return G2B
+        PV_power = self.data.p_pv1 + self.data.p_pv2
+        load_power = self.data.p_load_demand
+        charge_power = 0
+        battery_power = self.data.p_battery
+        if battery_power > 0:
+            charge_power = abs(battery_power)
+        G2B = charge_power - max(PV_power-load_power,0)
+        return G2B
+ 
+    #Grid to House
+class GridToHouse(InverterBasicSensor):
+    """Solar to house derivation"""
+
+    @property
+    def native_value(self) -> StateType:
+        """charge_power-max(PV_power-Load_power,0) unless grid import power > 0"""
+        G2H = 0
+        grid_import_power = 0
+        if self.data.p_grid_out < 0:
+            grid_import_power = abs(self.data.p_grid_out)
+        if grid_import_power > 0:
+            return G2H
+        charge_power = 0
+        battery_power = self.data.p_battery
+        if battery_power > 0:
+            charge_power = abs(battery_power)
+        G2H = max(grid_import_power-charge_power,0)
+        return G2H
