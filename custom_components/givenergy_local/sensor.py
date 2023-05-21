@@ -135,14 +135,6 @@ _BASIC_INVERTER_SENSORS = [
         native_unit_of_measurement=POWER_WATT,
     ),
     SensorEntityDescription(
-        key="p_grid_out",
-        name="Grid Power",
-        icon=Icon.GRID_EXPORT,
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=POWER_WATT,
-    ),
-    SensorEntityDescription(
         key="v_battery",
         name="Battery Voltage",
         icon=Icon.BATTERY,
@@ -720,7 +712,7 @@ class BatteryToHouse(InverterBasicSensor):
         """max(discharge_power-export_power,0)"""
         discharge_power = 0
         battery_power = self.data.p_battery
-        if battery_power >= 0:
+        if battery_power > 0:
             discharge_power = abs(battery_power)
         grid_export_power = 0
         if self.data.p_grid_out > 0:
@@ -734,16 +726,10 @@ class BatteryToGrid(InverterBasicSensor):
 
     @property
     def native_value(self) -> StateType:
-        """max(discharge_power-B2H,0) unless grid export power = 0"""
-        B2G = 0
-        grid_export_power = 0
-        if self.data.p_grid_out > 0:
-            grid_export_power = abs(self.data.p_grid_out)
-        if grid_export_power = 0:
-            return B2G
+        """max(discharge_power-B2H,0)"""
         discharge_power = 0
         battery_power = self.data.p_battery
-        if battery_power >= 0:
+        if battery_power > 0:
             discharge_power = abs(battery_power)
         grid_export_power = 0
         if self.data.p_grid_out > 0:
@@ -751,7 +737,7 @@ class BatteryToGrid(InverterBasicSensor):
         B2H = max(discharge_power - grid_export_power, 0)
         B2G = max(discharge_power - B2H, 0)
         return B2G
-        
+    
     #Grid to Battery
 class GridToBattery(InverterBasicSensor):
     """Grid to Battery derivation"""
